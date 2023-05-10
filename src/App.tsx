@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
 import { Button, MenuItem } from '@mui/material';
-import axios from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 import './index.scss';
 
-function App() {
-  const [name, setName] = useState('');
-  const [preparationTime, setPreparationTime] = useState('');
-  const [type, setType] = useState('');
-  const [noOfSlices, setNoOfSlices] = useState('');
-  const [diameter, setDiameter] = useState('');
-  const [spicinessScale, setSpicinessScale] = useState('');
-  const [slicesOfBread, setSlicesOfBread] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(false);
+function App(): JSX.Element {
+  const [name, setName] = useState<string>('');
+  const [preparationTime, setPreparationTime] = useState<string>('');
+  const [type, setType] = useState<string>('');
+  const [noOfSlices, setNoOfSlices] = useState<string>('');
+  const [diameter, setDiameter] = useState<string>('');
+  const [spicinessScale, setSpicinessScale] = useState<string>('');
+  const [slicesOfBread, setSlicesOfBread] = useState<string>('');
+  const [success, setSuccess] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
 
-  const resetForm = () => {
+  const resetForm = (): void => {
     setName('');
     setPreparationTime('');
     setType('');
@@ -28,7 +28,7 @@ function App() {
     setError(false);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     const dishData = {
       name,
@@ -42,14 +42,14 @@ function App() {
     // console.log('from FE: ', JSON.stringify(dishData));
     try {
       axios
-        .post('https://umzzcc503l.execute-api.us-west-2.amazonaws.com/dishes/', dishData)
-        .then((response) => {
+        .post<string>('https://umzzcc503l.execute-api.us-west-2.amazonaws.com/dishes/', dishData)
+        .then((response: AxiosResponse<string>) => {
           console.log('response: ', response.data);
           setSuccess(true);
           setTimeout(resetForm, 1500);
         })
-        .catch((error) => {
-          console.warn('error: ', error.response.data);
+        .catch((error: AxiosError<string>) => {
+          console.warn('error: ', error.response?.data);
           setError(true);
         });
     } catch (error) {
