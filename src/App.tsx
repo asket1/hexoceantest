@@ -1,24 +1,158 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import TextField from '@mui/material/TextField';
+import { Button, MenuItem } from '@mui/material';
+import axios from 'axios';
+
+import './index.scss';
 
 function App() {
+  const [name, setName] = useState('');
+  const [preparationTime, setPreparationTime] = useState('');
+  const [type, setType] = useState('');
+  const [noOfSlices, setNoOfSlices] = useState('');
+  const [diameter, setDiameter] = useState('');
+  const [spicinessScale, setSpicinessScale] = useState('');
+  const [slicesOfBread, setSlicesOfBread] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
+
+  const resetForm = () => {
+    setName('');
+    setPreparationTime('');
+    setType('');
+    setNoOfSlices('');
+    setDiameter('');
+    setSpicinessScale('');
+    setSlicesOfBread('');
+    setSuccess(false);
+    setError(false);
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const dishData = {
+      name,
+      preparation_time: preparationTime,
+      type,
+      no_of_slices: type === 'pizza' ? noOfSlices : undefined,
+      diameter: type === 'pizza' ? diameter : undefined,
+      spiciness_scale: type === 'soup' ? spicinessScale : undefined,
+      slices_of_bread: type === 'sandwich' ? slicesOfBread : undefined,
+    };
+    // console.log('from FE: ', JSON.stringify(dishData));
+    try {
+      axios
+        .post('https://umzzcc503l.execute-api.us-west-2.amazonaws.com/dishes/', dishData)
+        .then((response) => {
+          console.log('response: ', response.data);
+          setSuccess(true);
+          setTimeout(resetForm, 1500);
+        })
+        .catch((error) => {
+          console.warn('error: ', error.response.data);
+          setError(true);
+        });
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <div>
+      <form onSubmit={handleSubmit}>
+        <TextField
+          label="Name"
+          value={name}
+          inputProps={{ minlength: '3' }}
+          onChange={(event) => setName(event.target.value)}
+          required
+          fullWidth
+        />
+
+        <TextField
+          label="Preparation Time"
+          type="time"
+          value={preparationTime}
+          inputProps={{ step: '1' }}
+          InputLabelProps={{ shrink: true }}
+          onChange={(event) => setPreparationTime(event.target.value)}
+          required
+          fullWidth
+        />
+
+        <TextField
+          select
+          label="Type"
+          value={type}
+          onChange={(event) => {
+            setType(event.target.value);
+          }}
+          fullWidth
+          required
         >
-          Learn React
-        </a>
-      </header>
+          <MenuItem value="">Select a dish type</MenuItem>
+          <MenuItem value="pizza">Pizza</MenuItem>
+          <MenuItem value="soup">Soup</MenuItem>
+          <MenuItem value="sandwich">Sandwich</MenuItem>
+        </TextField>
+
+        {type === 'pizza' && (
+          <>
+            <TextField
+              label="Number of Slices"
+              type="number"
+              inputProps={{ inputMode: 'numeric', min: '1', max: '10', step: '1' }}
+              value={noOfSlices}
+              onChange={(event) => setNoOfSlices(event.target.value)}
+              required
+              fullWidth
+            />
+
+            <TextField
+              label="Diameter"
+              type="number"
+              inputProps={{ inputMode: 'numeric', min: '1', max: '80', step: '0.1' }}
+              value={diameter}
+              onChange={(event) => setDiameter(event.target.value)}
+              required
+              fullWidth
+            />
+          </>
+        )}
+        {type === 'soup' && (
+          <>
+            <TextField
+              label="Spiciness Scale"
+              type="number"
+              inputProps={{ inputMode: 'numeric', min: '1', max: '10', step: '1' }}
+              value={spicinessScale}
+              onChange={(event) => setSpicinessScale(event.target.value)}
+              required
+              fullWidth
+            />
+          </>
+        )}
+        {type === 'sandwich' && (
+          <>
+            <TextField
+              label="Slices of Bread"
+              type="number"
+              inputProps={{ inputMode: 'numeric', min: '1', max: '20', step: '1' }}
+              value={slicesOfBread}
+              onChange={(event) => setSlicesOfBread(event.target.value)}
+              required
+              fullWidth
+            />
+          </>
+        )}
+
+        <Button type="submit" variant="contained" color="primary">
+          Add dish
+        </Button>
+
+        {success && <p className="success">Success! Your dish has been added.</p>}
+        {error && <p className="error">Something went wrong.</p>}
+      </form>
     </div>
   );
 }
